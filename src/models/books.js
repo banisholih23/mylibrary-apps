@@ -1,14 +1,26 @@
 const db = require('../config/index')
 
 module.exports = {
-  getAllBook: (start, end) => {
-    const sql = `SELECT * FROM lis_book LIMIT ${end} OFFSET ${start}`
+  getAllBook: (start, end, data = {}) => {
+    //const sql = `SELECT * FROM lis_book LIMIT ${end} OFFSET ${start}`
+    const sql = `SELECT * FROM lis_book WHERE book_title LIKE '${data.search || ''}%' ORDER BY book_title ${parseInt(data.sort) ? 'DESC' : 'ASC'} LIMIT ${end} OFFSET ${start}`
     return new Promise((resolve, reject) => {
       db.query(sql, (error, results) => {
         if (error) {
           reject(Error(error))
         }
         resolve(results)
+      })
+    })
+  },
+  countData: (start, end, data = {}) => {
+    const sql = `SELECT COUNT(*) as total FROM lis_book WHERE book_title LIKE '${data.search || ''}%' ORDER BY book_title ${parseInt(data.sort) ? 'DESC' : 'ASC'} LIMIT ${end} OFFSET ${start}`
+    return new Promise((resolve, reject) => {
+      db.query(sql, (error, results) => {
+        if (error) {
+          reject(Error(error))
+        }
+        resolve(results[0].total)
       })
     })
   },
@@ -65,6 +77,15 @@ module.exports = {
         }
         resolve(result.affectedRows)
       })
+    })
+  },
+  bookUpload: (data) => {
+    const sql = 'INSERT INTO lis_book VALUES (image)'
+    db.query(sql, data, (error, result) => {
+      if (error) {
+        reject(Error(error))
+      }
+      resolve(result.affectedRows)
     })
   }
 }
